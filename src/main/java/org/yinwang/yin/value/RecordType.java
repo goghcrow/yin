@@ -22,10 +22,12 @@ public class RecordType extends Value {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.TUPLE_BEGIN);
         sb.append(Constants.RECORD_KEYWORD).append(" ");
+        // _ 匿名 record
         sb.append(name == null ? "_" : name);
 
         for (String field : properties.keySet()) {

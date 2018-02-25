@@ -1,8 +1,8 @@
 package org.yinwang.yin.ast;
 
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.RecordType;
 import org.yinwang.yin.value.RecordValue;
 import org.yinwang.yin.value.Value;
@@ -22,16 +22,17 @@ public class Attr extends Node {
     @Override
     public Value interp(Scope s) {
         Value record = value.interp(s);
+        //noinspection Duplicates
         if (record instanceof RecordValue) {
             Value a = ((RecordValue) record).properties.lookupLocal(attr.id);
             if (a != null) {
                 return a;
             } else {
-                _.abort(attr, "attribute " + attr + " not found in record: " + record);
+                $.syntaxError(attr, "attribute " + attr + " not found in record: " + record);
                 return null;
             }
         } else {
-            _.abort(attr, "getting attribute of non-record: " + record);
+            $.syntaxError(attr, "getting attribute of non-record: " + record);
             return null;
         }
     }
@@ -39,17 +40,18 @@ public class Attr extends Node {
 
     @Override
     public Value typecheck(Scope s) {
+        // fixme ?
         Value record = value.typecheck(s);
         if (record instanceof RecordValue) {
             Value a = ((RecordValue) record).properties.lookupLocal(attr.id);
             if (a != null) {
                 return a;
             } else {
-                _.abort(attr, "attribute " + attr + " not found in record: " + record);
+                $.syntaxError(attr, "attribute " + attr + " not found in record: " + record);
                 return null;
             }
         } else {
-            _.abort(attr, "getting attribute of non-record: " + record);
+            $.syntaxError(attr, "getting attribute of non-record: " + record);
             return null;
         }
     }
@@ -62,14 +64,15 @@ public class Attr extends Node {
             if (a != null) {
                 ((RecordType) record).properties.putValue(attr.id, v);
             } else {
-                _.abort(attr, "can only assign to existing attribute in record, " + attr + " not found in: " + record);
+                $.syntaxError(attr, "can only assign to existing attribute in record, " + attr + " not found in: " + record);
             }
         } else {
-            _.abort(attr, "setting attribute of non-record: " + record);
+            $.syntaxError(attr, "setting attribute of non-record: " + record);
         }
     }
 
 
+    @Override
     public String toString() {
         return value + "." + attr;
     }

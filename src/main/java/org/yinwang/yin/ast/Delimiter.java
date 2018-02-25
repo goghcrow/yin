@@ -4,16 +4,21 @@ package org.yinwang.yin.ast;
 import org.yinwang.yin.Scope;
 import org.yinwang.yin.value.Value;
 
-public class Delimeter extends Node {
+
+/**
+ * parser 分隔符 () [] {} .
+ */
+public class Delimiter extends Node {
     public String shape;
 
 
-    public Delimeter(String shape, String file, int start, int end, int line, int col) {
+    public Delimiter(String shape, String file, int start, int end, int line, int col) {
         super(file, start, end, line, col);
         this.shape = shape;
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return null;
     }
@@ -25,6 +30,7 @@ public class Delimeter extends Node {
     }
 
 
+    @Override
     public String toString() {
         return shape;
     }

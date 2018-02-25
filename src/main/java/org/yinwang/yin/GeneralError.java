@@ -3,7 +3,8 @@ package org.yinwang.yin;
 
 import org.yinwang.yin.ast.Node;
 
-public class GeneralError extends Exception {
+@SuppressWarnings("WeakerAccess")
+public class GeneralError extends RuntimeException {
     public String msg;
     public Node location;
 
@@ -19,6 +20,7 @@ public class GeneralError extends Exception {
     }
 
 
+    @Override
     public String toString() {
         if (location != null) {
             return location.getFileLineCol() + ": " + msg;

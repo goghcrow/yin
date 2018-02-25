@@ -16,13 +16,16 @@ public abstract class PrimFun extends Value {
     }
 
 
-    // how to apply the primitive to args (must be positional)
+    /**
+     * how to apply the primitive to args (must be positional)
+     */
     public abstract Value apply(List<Value> args, Node location);
 
 
     public abstract Value typecheck(List<Value> args, Node location);
 
 
+    @Override
     public String toString() {
         return name;
     }

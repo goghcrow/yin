@@ -2,7 +2,7 @@ package org.yinwang.yin.ast;
 
 import org.yinwang.yin.Constants;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
+import org.yinwang.yin.$;
 import org.yinwang.yin.value.BoolType;
 import org.yinwang.yin.value.BoolValue;
 import org.yinwang.yin.value.UnionType;
@@ -22,6 +22,7 @@ public class If extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         Value tv = interp(test, s);
         if (((BoolValue) tv).value) {
@@ -36,7 +37,7 @@ public class If extends Node {
     public Value typecheck(Scope s) {
         Value tv = typecheck(test, s);
         if (!(tv instanceof BoolType)) {
-            _.abort(test, "test is not boolean: " + tv);
+            $.syntaxError(test, "test is not boolean: " + tv);
             return null;
         }
         Value type1 = typecheck(then, s);
@@ -45,6 +46,7 @@ public class If extends Node {
     }
 
 
+    @Override
     public String toString() {
         return "(" + Constants.IF_KEYWORD + " " + test + " " + then + " " + orelse + ")";
     }

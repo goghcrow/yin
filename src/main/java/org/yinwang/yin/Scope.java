@@ -12,6 +12,9 @@ import java.util.Set;
 
 public class Scope {
 
+    /**
+     * name => ["value"|"type" => Value]
+     */
     public Map<String, Map<String, Object>> table = new LinkedHashMap<>();
     public Scope parent;
 
@@ -48,12 +51,13 @@ public class Scope {
 
     public Value lookup(String name) {
         Object v = lookupProperty(name, "value");
+        //noinspection Duplicates
         if (v == null) {
             return null;
         } else if (v instanceof Value) {
             return (Value) v;
         } else {
-            _.abort("value is not a Value, shouldn't happen: " + v);
+            $.generalError("value is not a Value, shouldn't happen: " + v);
             return null;
         }
     }
@@ -61,12 +65,13 @@ public class Scope {
 
     public Value lookupLocal(String name) {
         Object v = lookupPropertyLocal(name, "value");
+        //noinspection Duplicates
         if (v == null) {
             return null;
         } else if (v instanceof Value) {
             return (Value) v;
         } else {
-            _.abort("value is not a Value, shouldn't happen: " + v);
+            $.generalError("value is not a Value, shouldn't happen: " + v);
             return null;
         }
     }
@@ -74,12 +79,13 @@ public class Scope {
 
     public Value lookupType(String name) {
         Object v = lookupProperty(name, "type");
+        //noinspection Duplicates
         if (v == null) {
             return null;
         } else if (v instanceof Value) {
             return (Value) v;
         } else {
-            _.abort("value is not a Value, shouldn't happen: " + v);
+            $.generalError("value is not a Value, shouldn't happen: " + v);
             return null;
         }
     }
@@ -87,12 +93,13 @@ public class Scope {
 
     public Value lookupLocalType(String name) {
         Object v = lookupPropertyLocal(name, "type");
+        //noinspection Duplicates
         if (v == null) {
             return null;
         } else if (v instanceof Value) {
             return (Value) v;
         } else {
-            _.abort("value is not a Value, shouldn't happen: " + v);
+            $.generalError("value is not a Value, shouldn't happen: " + v);
             return null;
         }
     }
@@ -154,8 +161,8 @@ public class Scope {
         init.putValue("or", new Or());
         init.putValue("not", new Not());
 
-        init.putValue("true", new BoolValue(true));
-        init.putValue("false", new BoolValue(false));
+        init.putValue("true", Value.TRUE);
+        init.putValue("false", Value.FALSE);
 
         init.putValue("Int", Type.INT);
         init.putValue("Bool", Type.BOOL);
@@ -235,8 +242,9 @@ public class Scope {
     }
 
 
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String name : table.keySet()) {
             sb.append(Constants.ARRAY_BEGIN).append(name).append(" ");
             for (Map.Entry<String, Object> e : table.get(name).entrySet()) {

@@ -1,8 +1,8 @@
 package org.yinwang.yin.ast;
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Constants;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.RecordType;
 import org.yinwang.yin.value.Value;
 
@@ -10,7 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * record字面量
+ * {:k1 v1 :k2 v2}
+ */
 public class RecordLiteral extends Node {
 
     public Map<String, Node> map = new LinkedHashMap<>();
@@ -20,7 +23,7 @@ public class RecordLiteral extends Node {
         super(file, start, end, line, col);
 
         if (contents.size() % 2 != 0) {
-            _.abort(this, "record initializer must have even number of elements");
+            $.syntaxError(this, "record initializer must have even number of elements");
         }
 
         for (int i = 0; i < contents.size(); i += 2) {
@@ -28,22 +31,24 @@ public class RecordLiteral extends Node {
             Node value = contents.get(i + 1);
             if (key instanceof Keyword) {
                 if (value instanceof Keyword) {
-                    _.abort(value, "keywords shouldn't be used as values: " + value);
+                    $.syntaxError(value, "keywords shouldn't be used as values: " + value);
                 } else {
                     map.put(((Keyword) key).id, value);
                 }
             } else {
-                _.abort(key, "record initializer key is not a keyword: " + key);
+                $.syntaxError(key, "record initializer key is not a keyword: " + key);
             }
         }
     }
 
 
+    @Override
     public Value interp(Scope s) {
         Scope properties = new Scope();
         for (Map.Entry<String, Node> e : map.entrySet()) {
             properties.putValue(e.getKey(), e.getValue().interp(s));
         }
+        // Record 字面量 解释为 RecordType ??
         return new RecordType(null, this, properties);
     }
 
@@ -58,6 +63,7 @@ public class RecordLiteral extends Node {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.RECORD_BEGIN);

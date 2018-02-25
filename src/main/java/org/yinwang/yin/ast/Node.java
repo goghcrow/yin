@@ -6,6 +6,7 @@ import org.yinwang.yin.value.Value;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class Node {
     public String file;
     public int start;

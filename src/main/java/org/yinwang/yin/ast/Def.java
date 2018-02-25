@@ -17,10 +17,13 @@ public class Def extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         Value valueValue = value.interp(s);
+        // 在当前环境中查重 并加入当前环境
         Binder.checkDup(pattern);
         Binder.define(pattern, valueValue, s);
+        // define 无返回值
         return Value.VOID;
     }
 
@@ -34,6 +37,7 @@ public class Def extends Node {
     }
 
 
+    @Override
     public String toString() {
         return "(" + Constants.DEF_KEYWORD + " " + pattern + " " + value + ")";
     }

@@ -20,9 +20,8 @@ public class U extends PrimFun {
         return null;
     }
 
-
+    @Override
     public Value typecheck(List<Value> args, Node location) {
         return UnionType.union(args);
     }
-
 }

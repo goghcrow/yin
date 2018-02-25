@@ -1,7 +1,7 @@
 package org.yinwang.yin.value.primitives;
 
 
-import org.yinwang.yin._;
+import org.yinwang.yin.$;
 import org.yinwang.yin.ast.Node;
 import org.yinwang.yin.value.*;
 
@@ -21,17 +21,17 @@ public class Not extends PrimFun {
         if (v1 instanceof BoolValue) {
             return new BoolValue(!((BoolValue) v1).value);
         }
-        _.abort(location, "incorrect argument type for not: " + v1);
+        $.syntaxError(location, "incorrect argument type for not: " + v1);
         return null;
     }
 
-
+    @Override
     public Value typecheck(List<Value> args, Node location) {
         Value v1 = args.get(0);
         if (v1 instanceof BoolType) {
             return Type.BOOL;
         }
-        _.abort(location, "incorrect argument type for not: " + v1);
+        $.syntaxError(location, "incorrect argument type for not: " + v1);
         return null;
     }
 }

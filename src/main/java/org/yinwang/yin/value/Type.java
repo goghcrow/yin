@@ -1,5 +1,7 @@
 package org.yinwang.yin.value;
 
+import org.yinwang.yin.ast.BigInt;
+
 public class Type {
 
     public static boolean subtype(Value type1, Value type2, boolean ret) {
@@ -24,6 +26,7 @@ public class Type {
 
     public static final Value BOOL = new BoolType();
     public static final Value INT = new IntType();
+    public static final Value BIGINT = new BigIntType();
     public static final Value STRING = new StringType();
 
 }

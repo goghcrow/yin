@@ -2,10 +2,13 @@ package org.yinwang.yin.ast;
 
 
 import org.yinwang.yin.Scope;
+import org.yinwang.yin.value.BigIntValue;
+import org.yinwang.yin.value.Type;
 import org.yinwang.yin.value.Value;
 
 import java.math.BigInteger;
 
+// fixme
 public class BigInt extends Node {
 
     public String content;
@@ -58,17 +61,19 @@ public class BigInt extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
-        return null;
+        return new BigIntValue(value);
     }
 
 
     @Override
     public Value typecheck(Scope s) {
-        return null;
+        return Type.BIGINT;
     }
 
 
+    @Override
     public String toString() {
         return content;
     }

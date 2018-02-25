@@ -58,6 +58,7 @@ public class IntNum extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return new IntValue(value);
     }

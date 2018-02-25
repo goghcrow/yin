@@ -1,10 +1,14 @@
 package org.yinwang.yin.ast;
 
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.Value;
 
+
+/**
+ * :\\w.* 匹配正则
+ */
 public class Keyword extends Node {
     public String id;
 
@@ -20,19 +24,21 @@ public class Keyword extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
-        _.abort(this, "keyword used as value");
+        $.syntaxError(this, "keyword used as value");
         return null;
     }
 
 
     @Override
     public Value typecheck(Scope s) {
-        _.abort(this, "keyword used as value");
+        $.syntaxError(this, "keyword used as value");
         return null;
     }
 
 
+    @Override
     public String toString() {
         return ":" + id;
     }

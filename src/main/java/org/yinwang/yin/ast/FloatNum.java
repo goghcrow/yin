@@ -28,6 +28,7 @@ public class FloatNum extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return new FloatValue(value);
     }

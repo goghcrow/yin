@@ -1,8 +1,8 @@
 package org.yinwang.yin.ast;
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Constants;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.Value;
 
 import java.util.Map;
@@ -18,7 +18,9 @@ public class Declare extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
+        // fixme
 //        mergeProperties(propsNode, s);
         return Value.VOID;
     }
@@ -41,7 +43,7 @@ public class Declare extends Node {
                     s.putValue(key, (Value) defaultValue);
                 }
             } else {
-                _.abort("default value is not a value, shouldn't happen");
+                $.generalError("default value is not a value, shouldn't happen");
             }
         }
     }
@@ -61,7 +63,7 @@ public class Declare extends Node {
                     s.putValue(key, (Value) type);
                 }
             } else {
-                _.abort("illegal type, shouldn't happen" + type);
+                $.generalError("illegal type, shouldn't happen" + type);
             }
         }
     }
@@ -78,10 +80,11 @@ public class Declare extends Node {
                     Value vValue = ((Node) v).interp(s);
                     evaled.put(field, e.getKey(), vValue);
                 } else {
-                    _.abort("property is not a node, parser bug: " + v);
+                    $.generalError("property is not a node, parser bug: " + v);
                 }
             }
         }
+
         return evaled;
     }
 
@@ -100,7 +103,7 @@ public class Declare extends Node {
                         Value vValue = ((Node) v).typecheck(s);
                         evaled.put(field, e.getKey(), vValue);
                     } else {
-                        _.abort("property is not a node, parser bug: " + v);
+                        $.generalError("property is not a node, parser bug: " + v);
                     }
                 }
             }
@@ -109,6 +112,7 @@ public class Declare extends Node {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.TUPLE_BEGIN);

@@ -1,8 +1,9 @@
 package org.yinwang.yin.parser;
 
+import org.jetbrains.annotations.NotNull;
+import org.yinwang.yin.$;
 import org.yinwang.yin.Constants;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.ast.*;
 
 import java.util.ArrayList;
@@ -10,9 +11,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("WeakerAccess")
 public class Parser {
 
-    public static Node parse(String file) {
+    public static Node parse(@NotNull String file, @NotNull String text) {
+        PreParser preparser = new PreParser(file, text);
+        Node prenode = preparser.parse();
+        Node grouped = groupAttr(prenode);
+        grouped = groupSubscript(grouped);
+        return parseNode(grouped);
+    }
+
+
+    public static Node parse(@NotNull String file) {
         PreParser preparser = new PreParser(file);
         Node prenode = preparser.parse();
         Node grouped = groupAttr(prenode);
@@ -22,6 +33,7 @@ public class Parser {
 
     public static Node parseNode(Node prenode) {
 
+        // 程序自身是一个seq，构成一个Block
         // initial program is in a block
         if (prenode instanceof Block) {
             List<Node> parsed = parseList(((Block) prenode).statements);
@@ -41,7 +53,7 @@ public class Parser {
             List<Node> elements = tuple.elements;
 
             if (elements.isEmpty()) {
-                _.abort(tuple, "syntax error");
+                $.syntaxError(tuple, "syntax error");
             }
 
             if (delimType(tuple.open, Constants.RECORD_BEGIN)) {
@@ -84,7 +96,7 @@ public class Parser {
                         return new Def(pattern, value, prenode.file, prenode.start, prenode.end, prenode.line,
                                 prenode.col);
                     } else {
-                        _.abort(tuple, "incorrect format of definition");
+                        $.syntaxError(tuple, "incorrect format of definition");
                     }
                 }
 
@@ -96,14 +108,14 @@ public class Parser {
                         return new Assign(pattern, value, prenode.file, prenode.start, prenode.end, prenode.line,
                                 prenode.col);
                     } else {
-                        _.abort(tuple, "incorrect format of definition");
+                        $.syntaxError(tuple, "incorrect format of definition");
                     }
                 }
 
                 // -------------------- declare --------------------
                 if (keyword.equals(Constants.DECLARE_KEYWORD)) {
                     if (elements.size() < 2) {
-                        _.abort(tuple, "syntax error in record type definition");
+                        $.syntaxError(tuple, "syntax error in record type definition");
                     }
                     Scope properties = parseProperties(elements.subList(1, elements.size()));
                     return new Declare(properties, prenode.file,
@@ -113,14 +125,28 @@ public class Parser {
                 // -------------------- anonymous function --------------------
                 if (keyword.equals(Constants.FUN_KEYWORD)) {
                     if (elements.size() < 3) {
-                        _.abort(tuple, "syntax error in function definition");
+                        $.syntaxError(tuple, "syntax error in function definition");
                     }
 
+                    // 形参必须是tuple
                     // construct parameter list
                     Node preParams = elements.get(1);
                     if (!(preParams instanceof Tuple)) {
-                        _.abort(preParams, "incorrect format of parameters: " + preParams);
+                        $.syntaxError(preParams, "incorrect format of parameters: " + preParams);
                     }
+
+                    // (op (para-list) )
+                    // 支持两种参数声明方式
+                    // 1. all names 2. all tuples
+                    /*
+                    (fun (a b) (+ a b))
+                    (fun ([a Int :default 42]
+                          [b Int :default 0])
+                       (+ a b)))
+                    (fun ([a Int]
+                          [b Int])
+                       (+ a b)))
+                    */
 
                     // parse the parameters, test whether it's all names or all tuples
                     boolean hasName = false;
@@ -136,10 +162,10 @@ public class Parser {
                             hasTuple = true;
                             List<Node> argElements = ((Tuple) p).elements;
                             if (argElements.size() == 0) {
-                                _.abort(p, "illegal argument format: " + p);
+                                $.syntaxError(p, "illegal argument format: " + p);
                             }
                             if (!(argElements.get(0) instanceof Name)) {
-                                _.abort(p, "illegal argument name : " + argElements.get(0));
+                                $.syntaxError(p, "illegal argument name : " + argElements.get(0));
                             }
 
                             Name name = (Name) argElements.get(0);
@@ -151,7 +177,7 @@ public class Parser {
                     }
 
                     if (hasName && hasTuple) {
-                        _.abort(preParams, "parameters must be either all names or all tuples: " + preParams);
+                        $.syntaxError(preParams, "parameters must be either all names or all tuples: " + preParams);
                         return null;
                     }
 
@@ -173,9 +199,15 @@ public class Parser {
                 }
 
                 // -------------------- record type definition --------------------
+                // (record name fields)
+                // (record name parent fields) (record (Parent1, Parent2) ...)
+                // (name [name type :k v] [name type :k v])
+                // (name (name1 name2) [name type :k v] [name type :k v])
+                // (record A :x 1 :y 2)
+                // (record A [a Int :x 1] [b Int :y 2])
                 if (keyword.equals(Constants.RECORD_KEYWORD)) {
                     if (elements.size() < 2) {
-                        _.abort(tuple, "syntax error in record type definition");
+                        $.syntaxError(tuple, "syntax error in record type definition");
                     }
 
                     Node name = elements.get(1);
@@ -185,7 +217,7 @@ public class Parser {
                     List<Node> fields;
 
                     if (!(name instanceof Name)) {
-                        _.abort(name, "syntax error in record name: " + name);
+                        $.syntaxError(name, "syntax error in record name: " + name);
                         return null;
                     }
 
@@ -197,7 +229,7 @@ public class Parser {
                         parents = new ArrayList<>();
                         for (Node p : parentNodes) {
                             if (!(p instanceof Name)) {
-                                _.abort(p, "parents can only be names");
+                                $.syntaxError(p, "parents can only be names");
                             }
                             parents.add((Name) p);
                         }
@@ -221,7 +253,7 @@ public class Parser {
             return new Call(func, args, prenode.file, prenode.start, prenode.end, prenode.line, prenode.col);
         }
 
-        // defaut return the node untouched
+        // default return the node untouched
         return prenode;
     }
 
@@ -235,11 +267,14 @@ public class Parser {
     }
 
 
-    // treat the list of nodes as key-value pairs like (:x 1 :y 2)
+    /**
+     * treat the list of nodes as key-value pairs like (:x 1 :y 2)
+     */
+    @NotNull
     public static Map<String, Node> parseMap(List<Node> prenodes) {
         Map<String, Node> ret = new LinkedHashMap<>();
         if (prenodes.size() % 2 != 0) {
-            _.abort("must be of the form (:key1 value1 :key2 value2), but got: " + prenodes);
+            $.generalError("must be of the form (:key1 value1 :key2 value2), but got: " + prenodes);
             return null;
         }
 
@@ -247,7 +282,7 @@ public class Parser {
             Node key = prenodes.get(i);
             Node value = prenodes.get(i + 1);
             if (!(key instanceof Keyword)) {
-                _.abort(key, "key must be a keyword, but got: " + key);
+                $.syntaxError(key, "key must be a keyword, but got: " + key);
             }
             ret.put(((Keyword) key).id, value);
         }
@@ -255,6 +290,19 @@ public class Parser {
     }
 
 
+    /**
+     * id type 必须，kv序对可选
+     * property likes
+     * [id type :k1 v1 :k2 v2]
+     *
+     * properties likes
+     * (property1 property2)
+     * ([id type] [])
+     *
+     * 1. declare
+     * 2. 函数参数
+     * 3. record 声明
+     */
     public static Scope parseProperties(List<Node> fields) {
         Scope properties = new Scope();
         for (Node field : fields) {
@@ -263,32 +311,33 @@ public class Parser {
             {
                 List<Node> elements = parseList(((Tuple) field).elements);
                 if (elements.size() < 2) {
-                    _.abort(field, "empty record slot not allowed");
+                    $.syntaxError(field, "empty record slot not allowed");
                 }
 
                 Node nameNode = elements.get(0);
                 if (!(nameNode instanceof Name)) {
-                    _.abort(nameNode, "expect field name, but got: " + nameNode);
+                    $.syntaxError(nameNode, "expect field name, but got: " + nameNode);
                 }
                 String id = ((Name) nameNode).id;
                 if (properties.containsKey(id)) {
-                    _.abort(nameNode, "duplicated field name: " + nameNode);
+                    $.syntaxError(nameNode, "duplicated field name: " + nameNode);
                 }
 
                 Node typeNode = elements.get(1);
+                // "type"  typeNode 在 interp 期间要转换为 Value
                 properties.put(id, "type", typeNode);
-
                 Map<String, Node> props = parseMap(elements.subList(2, elements.size()));
-                Map<String, Object> propsObj = new LinkedHashMap<>();
-                for (Map.Entry<String, Node> e : props.entrySet()) {
-                    propsObj.put(e.getKey(), e.getValue());
+                if (!props.isEmpty()) {
+                    Map<String, Object> propsObj = new LinkedHashMap<>();
+                    for (Map.Entry<String, Node> e : props.entrySet()) {
+                        propsObj.put(e.getKey(), e.getValue());
+                    }
+                    properties.putProperties(((Name) nameNode).id, propsObj);
                 }
-                properties.putProperties(((Name) nameNode).id, propsObj);
             }
         }
         return properties;
     }
-
 
     public static Node groupAttr(Node prenode) {
         if (prenode instanceof Tuple) {
@@ -297,22 +346,28 @@ public class Parser {
             List<Node> newElems = new ArrayList<>();
 
             if (elements.size() >= 1) {
+
+                // 所有tuple不能以 ATTRIBUTE_ACCESS 作为第一个元素
                 Node grouped = elements.get(0);
                 if (delimType(grouped, Constants.ATTRIBUTE_ACCESS)) {
-                    _.abort(grouped, "illegal keyword: " + grouped);
+                    $.syntaxError(grouped, "illegal keyword: " + grouped);
                 }
+
+                // 递归处理 tuple 第一个元素仍旧是tuple的情况
                 grouped = groupAttr(grouped);
 
+                // 从第二个元素开始遍历
                 for (int i = 1; i < elements.size(); i++) {
                     Node node1 = elements.get(i);
                     if (delimType(node1, Constants.ATTRIBUTE_ACCESS)) {
                         if (i + 1 >= elements.size()) {
-                            _.abort(node1, "illegal position for .");
+                            // tuple的最后一个元素不允许为 .
+                            $.syntaxError(node1, "illegal position for " + Constants.ATTRIBUTE_ACCESS);
                         }
                         Node node2 = elements.get(i + 1);
                         if (delimType(node1, Constants.ATTRIBUTE_ACCESS)) {
                             if (!(node2 instanceof Name)) {
-                                _.abort(node2, "attribute is not a name");
+                                $.syntaxError(node2, "attribute is not a name");
                             }
                             grouped = new Attr(grouped, (Name) node2, grouped.file,
                                     grouped.start, node2.end, grouped.line, grouped.col);
@@ -332,14 +387,61 @@ public class Parser {
     }
 
 
+    public static Node groupSubscript(Node prenode) {
+        if (prenode instanceof Tuple) {
+            Tuple t = (Tuple) prenode;
+            List<Node> elements = t.elements;
+            List<Node> newElems = new ArrayList<>();
+
+            if (elements.size() >= 1) {
+
+                // 所有tuple不能以 SUBSCRIPT_ACCESS 作为第一个元素
+                Node grouped = elements.get(0);
+                if (delimType(grouped, Constants.SUBSCRIPT_ACCESS)) {
+                    $.syntaxError(grouped, "illegal keyword: " + grouped);
+                }
+
+                // 递归处理 tuple 第一个元素仍旧是tuple的情况
+                grouped = groupSubscript(grouped);
+
+                // 从第二个元素开始遍历
+                for (int i = 1; i < elements.size(); i++) {
+                    Node node1 = elements.get(i);
+                    if (delimType(node1, Constants.SUBSCRIPT_ACCESS)) {
+                        if (i + 1 >= elements.size()) {
+                            // tuple的最后一个元素不允许为 .
+                            $.syntaxError(node1, "illegal position for " + Constants.SUBSCRIPT_ACCESS);
+                        }
+                        Node node2 = elements.get(i + 1);
+                        if (delimType(node1, Constants.SUBSCRIPT_ACCESS)) {
+                            Node index = parseNode(node2);
+                            grouped = new Subscript(grouped, index, grouped.file,
+                                    grouped.start, node2.end, grouped.line, grouped.col);
+                            i++;   // skip
+                        }
+                    } else {
+                        newElems.add(grouped);
+                        grouped = groupSubscript(node1);
+                    }
+                }
+                newElems.add(grouped);
+            }
+            return new Tuple(newElems, t.open, t.close, t.file, t.start, t.end, t.line, t.col);
+        } else {
+            return prenode;
+        }
+    }
+
+
     public static boolean delimType(Node c, String d) {
-        return c instanceof Delimeter && ((Delimeter) c).shape.equals(d);
+        return c instanceof Delimiter && ((Delimiter) c).shape.equals(d);
     }
 
 
     public static void main(String[] args) {
-        Node tree = Parser.parse(args[0]);
-        _.msg(tree.toString());
+        String file = args[0];
+        Node tree = Parser.parse(file);
+        $.msg(tree.toString());
     }
 
 }

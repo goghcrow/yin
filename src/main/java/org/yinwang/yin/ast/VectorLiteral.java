@@ -28,4 +28,21 @@ public class VectorLiteral extends Node {
         return new Vector(typecheckList(elements, s));
     }
 
+    @Override
+    public String toString() {
+        if (elements.isEmpty()) {
+            return "[ ]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append('[');
+        for (int i = 0; i < elements.size(); i++) {
+            sb.append(elements.get(i).toString());
+            if (i != 0 && i != elements.size() - 1) {
+                sb.append(" ");
+            }
+        }
+        return sb.append(']').toString();
+    }
 }

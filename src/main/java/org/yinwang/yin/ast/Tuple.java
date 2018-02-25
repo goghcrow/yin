@@ -6,7 +6,9 @@ import org.yinwang.yin.value.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * 词法分析阶段数据结构
+ */
 public class Tuple extends Node {
     public List<Node> elements = new ArrayList<>();
     public Node open;
@@ -30,6 +32,7 @@ public class Tuple extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return null;
     }
@@ -41,6 +44,7 @@ public class Tuple extends Node {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

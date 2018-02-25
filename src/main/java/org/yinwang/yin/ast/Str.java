@@ -17,6 +17,7 @@ public class Str extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return new StringValue(value);
     }
@@ -28,6 +29,7 @@ public class Str extends Node {
     }
 
 
+    @Override
     public String toString() {
         return "\"" + value + "\"";
     }

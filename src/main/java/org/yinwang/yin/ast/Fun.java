@@ -10,6 +10,7 @@ import org.yinwang.yin.value.Value;
 
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 public class Fun extends Node {
     public List<Name> params;
     public Node body;
@@ -24,6 +25,7 @@ public class Fun extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         // evaluate and cache the properties in the closure
         Scope properties = propertyForm == null ? null : Declare.evalProperties(propertyForm, s);
@@ -41,6 +43,7 @@ public class Fun extends Node {
     }
 
 
+    @Override
     public String toString() {
         return "(" + Constants.FUN_KEYWORD + " (" + params + ") " + body + ")";
     }

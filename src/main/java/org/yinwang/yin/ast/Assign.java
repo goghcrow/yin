@@ -17,6 +17,7 @@ public class Assign extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         Value valueValue = value.interp(s);
         Binder.checkDup(pattern);
@@ -34,6 +35,7 @@ public class Assign extends Node {
     }
 
 
+    @Override
     public String toString() {
         return "(" + Constants.ASSIGN_KEYWORD + " " + pattern + " " + value + ")";
     }

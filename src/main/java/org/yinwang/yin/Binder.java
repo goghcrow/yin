@@ -11,18 +11,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 变量绑定值
+ */
 public class Binder {
 
+    /**
+     * (define Name  Value)
+     * (define RecordLiteral RecordType)
+     * (define VectorLiteral VectorValue)
+     *
+     * define 是递归进行的， 决定了define的pattern与value也可以是递归的结构, 比如
+     * (define [a [b c] d] [1 [2 3] 4])
+     */
     public static void define(Node pattern, Value value, Scope env) {
         if (pattern instanceof Name) {
             String id = ((Name) pattern).id;
+            // 本地作用域不允许重复定义，但可以覆盖父级作用域`变量`
             Value v = env.lookupLocal(id);
             if (v != null) {
-                _.abort(pattern, "trying to redefine name: " + id);
+                $.syntaxError(pattern, "trying to redefine name: " + id);
             } else {
                 env.putValue(id, value);
             }
         } else if (pattern instanceof RecordLiteral) {
+            // recordType ??
             if (value instanceof RecordType) {
                 Map<String, Node> elms1 = ((RecordLiteral) pattern).map;
                 Scope elms2 = ((RecordType) value).properties;
@@ -31,11 +44,11 @@ public class Binder {
                         define(elms1.get(k1), elms2.lookupLocal(k1), env);
                     }
                 } else {
-                    _.abort(pattern, "define with records of different attributes: " +
+                    $.syntaxError(pattern, "define with records of different attributes: " +
                             elms1.keySet() + " v.s. " + elms2.keySet());
                 }
             } else {
-                _.abort(pattern, "define with incompatible types: record and " + value);
+                $.syntaxError(pattern, "define with incompatible types: record and " + value);
             }
         } else if (pattern instanceof VectorLiteral) {
             if (value instanceof Vector) {
@@ -46,14 +59,14 @@ public class Binder {
                         define(elms1.get(i), elms2.get(i), env);
                     }
                 } else {
-                    _.abort(pattern,
+                    $.syntaxError(pattern,
                             "define with vectors of different sizes: " + elms1.size() + " v.s. " + elms2.size());
                 }
             } else {
-                _.abort(pattern, "define with incompatible types: vector and " + value);
+                $.syntaxError(pattern, "define with incompatible types: vector and " + value);
             }
         } else {
-            _.abort(pattern, "unsupported pattern of define: " + pattern);
+            $.syntaxError(pattern, "unsupported pattern of define: " + pattern);
         }
     }
 
@@ -64,7 +77,7 @@ public class Binder {
             Scope d = env.findDefiningScope(id);
 
             if (d == null) {
-                _.abort(pattern, "assigned name was not defined: " + id);
+                $.syntaxError(pattern, "assigned name was not defined: " + id);
             } else {
                 d.putValue(id, value);
             }
@@ -81,11 +94,11 @@ public class Binder {
                         assign(elms1.get(k1), elms2.lookupLocal(k1), env);
                     }
                 } else {
-                    _.abort(pattern, "assign with records of different attributes: " +
+                    $.syntaxError(pattern, "assign with records of different attributes: " +
                             elms1.keySet() + " v.s. " + elms2.keySet());
                 }
             } else {
-                _.abort(pattern, "assign with incompatible types: record and " + value);
+                $.syntaxError(pattern, "assign with incompatible types: record and " + value);
             }
         } else if (pattern instanceof VectorLiteral) {
             if (value instanceof Vector) {
@@ -96,19 +109,19 @@ public class Binder {
                         assign(elms1.get(i), elms2.get(i), env);
                     }
                 } else {
-                    _.abort(pattern, "assign vectors of different sizes: " + elms1.size() + " v.s. " + elms2.size());
+                    $.syntaxError(pattern, "assign vectors of different sizes: " + elms1.size() + " v.s. " + elms2.size());
                 }
             } else {
-                _.abort(pattern, "assign incompatible types: vector and " + value);
+                $.syntaxError(pattern, "assign incompatible types: vector and " + value);
             }
         } else {
-            _.abort(pattern, "unsupported pattern of assign: " + pattern);
+            $.syntaxError(pattern, "unsupported pattern of assign: " + pattern);
         }
     }
 
 
     public static void checkDup(Node pattern) {
-        checkDup1(pattern, new HashSet<String>());
+        checkDup1(pattern, new HashSet<>());
     }
 
 
@@ -117,7 +130,7 @@ public class Binder {
         if (pattern instanceof Name) {
             String id = ((Name) pattern).id;
             if (seen.contains(id)) {
-                _.abort(pattern, "duplicated name found in pattern: " + pattern);
+                $.syntaxError(pattern, "duplicated name found in pattern: " + pattern);
             } else {
                 seen.add(id);
             }

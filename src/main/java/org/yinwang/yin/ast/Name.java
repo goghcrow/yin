@@ -1,10 +1,15 @@
 package org.yinwang.yin.ast;
 
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.Value;
 
+/**
+ * symbol
+ * name.id 作为 scope 的key
+ * name.Value要lookup scope获取
+ */
 public class Name extends Node {
     public String id;
 
@@ -15,6 +20,7 @@ public class Name extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         return s.lookup(id);
     }
@@ -26,12 +32,13 @@ public class Name extends Node {
         if (v != null) {
             return v;
         } else {
-            _.abort(this, "unbound variable: " + id);
+            $.syntaxError(this, "unbound variable: " + id);
             return Value.VOID;
         }
     }
 
 
+    @Override
     public String toString() {
         return id;
     }

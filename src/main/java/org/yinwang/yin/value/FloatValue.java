@@ -10,6 +10,7 @@ public class FloatValue extends Value {
     }
 
 
+    @Override
     public String toString() {
         return Double.toString(value);
     }

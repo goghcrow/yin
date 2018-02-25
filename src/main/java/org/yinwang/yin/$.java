@@ -12,21 +12,34 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
 
-public class _ {
+// for 1.8 : _ -> $
+@SuppressWarnings("WeakerAccess")
+public class $ {
 
-    @Nullable
+    @NotNull
     public static String readFile(@NotNull String path) {
         try {
             byte[] encoded = Files.readAllBytes(Paths.get(path));
             return Charset.forName("UTF-8").decode(ByteBuffer.wrap(encoded)).toString();
         } catch (IOException e) {
-            return null;
+            $.abort("failed to read file: " + path + ", caused by " + e.getMessage());
+            return "";
         }
     }
 
 
     public static void msg(String m) {
         System.out.println(m);
+    }
+
+
+    public static void generalError(String m) {
+        throw new GeneralError(m);
+    }
+
+
+    public static void syntaxError(Node loc, String msg) {
+        throw new SyntaxError(loc, msg);
     }
 
 
@@ -38,16 +51,8 @@ public class _ {
     }
 
 
-    public static void abort(Node loc, String msg) {
-        System.err.println(loc.getFileLineCol() + " " + msg);
-        System.err.flush();
-        Thread.dumpStack();
-        System.exit(1);
-    }
-
-
     @NotNull
-    public static String joinWithSep(@NotNull Collection<? extends Object> ls, String sep) {
+    public static String joinWithSep(@NotNull Collection<?> ls, @NotNull String sep) {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         for (Object s : ls) {
@@ -61,16 +66,16 @@ public class _ {
     }
 
 
-    public static String unifyPath(String filename) {
+    public static String unifyPath(@NotNull String filename) {
         return unifyPath(new File(filename));
     }
 
 
-    public static String unifyPath(File file) {
+    public static String unifyPath(@NotNull File file) {
         try {
             return file.getCanonicalPath();
         } catch (Exception e) {
-            abort("Failed to get canonical path");
+            generalError("Failed to get canonical path");
             return "";
         }
     }

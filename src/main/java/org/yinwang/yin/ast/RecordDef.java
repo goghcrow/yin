@@ -1,8 +1,8 @@
 package org.yinwang.yin.ast;
 
+import org.yinwang.yin.$;
 import org.yinwang.yin.Constants;
 import org.yinwang.yin.Scope;
-import org.yinwang.yin._;
 import org.yinwang.yin.value.RecordType;
 import org.yinwang.yin.value.Value;
 
@@ -27,6 +27,7 @@ public class RecordDef extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
         Scope properties = Declare.evalProperties(propertyForm, s);
 
@@ -50,7 +51,7 @@ public class RecordDef extends Node {
             for (Node p : parents) {
                 Value pv = p.typecheck(s);
                 if (!(pv instanceof RecordType)) {
-                    _.abort(p, "parent is not a record: " + pv);
+                    $.syntaxError(p, "parent is not a record: " + pv);
                     return null;
                 }
                 Scope parentProps = ((RecordType) pv).properties;
@@ -59,7 +60,7 @@ public class RecordDef extends Node {
                 for (String key : parentProps.keySet()) {
                     Value existing = properties.lookupLocalType(key);
                     if (existing != null) {
-                        _.abort(p, "conflicting field " + key +
+                        $.syntaxError(p, "conflicting field " + key +
                                 " inherited from parent " + p + ": " + pv);
                         return null;
                     }
@@ -76,6 +77,7 @@ public class RecordDef extends Node {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.TUPLE_BEGIN);

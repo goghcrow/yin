@@ -18,6 +18,7 @@ public class Closure extends Value {
     }
 
 
+    @Override
     public String toString() {
         return fun.toString();
     }

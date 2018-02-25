@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * 1. seq 关键字 或者 程序本身
+ * 2. 顺序执行statement，返回最后一项结果
+ */
 public class Block extends Node {
     public List<Node> statements = new ArrayList<>();
 
@@ -17,8 +21,17 @@ public class Block extends Node {
     }
 
 
+    @Override
     public Value interp(Scope s) {
+        if (statements.isEmpty()) {
+            return Value.VOID;
+        }
+
+        // Block 通过parent Scope访问upValue, 新建scope， 保存解析过程中新加入属性
         s = new Scope(s);
+        // 遍历解析，每一次解析都可能往scope添加属性
+        // 下一次解析可以使用之前加入的属性
+        // block 返回最后一项解析结果
         for (int i = 0; i < statements.size() - 1; i++) {
             statements.get(i).interp(s);
         }
@@ -36,6 +49,7 @@ public class Block extends Node {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         String sep = statements.size() > 5 ? "\n" : " ";

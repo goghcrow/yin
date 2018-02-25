@@ -62,6 +62,7 @@ public class UnionType extends Value {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Constants.TUPLE_BEGIN).append("U ");

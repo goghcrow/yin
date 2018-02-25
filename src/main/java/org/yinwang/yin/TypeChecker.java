@@ -56,13 +56,13 @@ public class TypeChecker {
         Object retNode = fun.properties.lookupPropertyLocal(Constants.RETURN_ARROW, "type");
 
         if (retNode == null || !(retNode instanceof Node)) {
-            _.abort("illegal return type: " + retNode);
+            $.generalError("illegal return type: " + retNode);
             return;
         }
 
         Value expected = ((Node) retNode).typecheck(funScope);
         if (!Type.subtype(actual, expected, true)) {
-            _.abort(fun.fun, "type error in return value, expected: " + expected + ", actual: " + actual);
+            $.syntaxError(fun.fun, "type error in return value, expected: " + expected + ", actual: " + actual);
         }
     }
 
@@ -71,7 +71,7 @@ public class TypeChecker {
         TypeChecker tc = new TypeChecker(args[0]);
         TypeChecker.self = tc;
         Value result = tc.typecheck(args[0]);
-        _.msg(result.toString());
+        $.msg(result.toString());
     }
 
 }
